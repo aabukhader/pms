@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Projects {
+  id           Int      @id @default(autoincrement())
+  title        String
+  short_name   String
+  description  String
+  contributors String[]
+  is_active    Boolean  @default(true)
+  is_deleted   Boolean  @default(false)
+  is_archived  Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime
+}
+
+model Boards {
+  id           Int      @id @default(autoincrement())
+  title        String
+  short_name   String
+  description  String
+  contributors String[]
+  type         String   @default("kanban")
+  is_active    Boolean  @default(true)
+  is_deleted   Boolean  @default(false)
+  is_archived  Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime
+}
+
+model WorkFlows {
+  id             Int      @id @default(autoincrement())
+  title          String
+  description    String
+  initial_status String
+  workflow       Json
+  is_active      Boolean  @default(true)
+  is_deleted     Boolean  @default(false)
+  is_archived    Boolean  @default(false)
+  created_at     DateTime @default(now())
+  updated_at     DateTime
+}
+
+model Lists {
+  id          Int      @id @default(autoincrement())
+  title       String
+  // add the parent relation id
+  is_active   Boolean  @default(true)
+  is_deleted  Boolean  @default(false)
+  is_archived Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime
+}
+
+model Tickets {
+  id               Int      @id @default(autoincrement())
+  title            String
+  description      String
+  assignee         String
+  reporter         String
+  type             String
+  status           String
+  template         String
+  estimation       String
+  additiona_fields Json?
+  due_date         DateTime
+  is_active        Boolean  @default(true)
+  is_deleted       Boolean  @default(false)
+  is_archived      Boolean  @default(false)
+  created_at       DateTime @default(now())
+  updated_at       DateTime
+}
+
+model Comments {
+  id           Int      @id @default(autoincrement())
+  commenter_id String
+  comment      String
+  
+  is_active    Boolean  @default(true)
+  is_deleted   Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime
+}

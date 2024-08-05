@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: pms
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: EJfwgPld6ZYoBWbiP6ryL1X691ASWl0UIgdt
+      POSTGRES_DB: pms
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start:dev
+
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: EJfwgPld6ZYoBWbiP6ryL1X691ASWl0UIgdt
+      POSTGRES_DB: pms
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
