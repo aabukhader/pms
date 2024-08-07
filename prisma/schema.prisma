@@ -19,6 +19,8 @@ model Projects {
   short_name   String
   description  String
   contributors String[]
+  owner_id     String
+  boards       Boards[]
   is_active    Boolean  @default(true)
   is_deleted   Boolean  @default(false)
   is_archived  Boolean  @default(false)
@@ -27,17 +29,23 @@ model Projects {
 }
 
 model Boards {
-  id           Int      @id @default(autoincrement())
+  id           Int         @id @default(autoincrement())
   title        String
   short_name   String
   description  String
   contributors String[]
-  type         String   @default("kanban")
-  is_active    Boolean  @default(true)
-  is_deleted   Boolean  @default(false)
-  is_archived  Boolean  @default(false)
-  created_at   DateTime @default(now())
+  type         String      @default("kanban")
+  project_id   Int
+  projcet      Projects    @relation(fields: [project_id], references: [id])
+  is_active    Boolean     @default(true)
+  is_deleted   Boolean     @default(false)
+  is_archived  Boolean     @default(false)
+  created_at   DateTime    @default(now())
   updated_at   DateTime
+  WorkFlows    WorkFlows[]
+  Lists        Lists[]
+
+  Tickets Tickets[]
 }
 
 model WorkFlows {
@@ -46,6 +54,8 @@ model WorkFlows {
   description    String
   initial_status String
   workflow       Json
+  board_id       Int?
+  board          Boards?  @relation(fields: [board_id], references: [id])
   is_active      Boolean  @default(true)
   is_deleted     Boolean  @default(false)
   is_archived    Boolean  @default(false)
@@ -57,6 +67,8 @@ model Lists {
   id          Int      @id @default(autoincrement())
   title       String
   // add the parent relation id
+  board_id    Int
+  board       Boards?  @relation(fields: [board_id], references: [id])
   is_active   Boolean  @default(true)
   is_deleted  Boolean  @default(false)
   is_archived Boolean  @default(false)
@@ -65,7 +77,7 @@ model Lists {
 }
 
 model Tickets {
-  id               Int      @id @default(autoincrement())
+  id               Int        @id @default(autoincrement())
   title            String
   description      String
   assignee         String
@@ -76,18 +88,22 @@ model Tickets {
   estimation       String
   additiona_fields Json?
   due_date         DateTime
-  is_active        Boolean  @default(true)
-  is_deleted       Boolean  @default(false)
-  is_archived      Boolean  @default(false)
-  created_at       DateTime @default(now())
+  board_id         Int
+  board            Boards?    @relation(fields: [board_id], references: [id])
+  is_active        Boolean    @default(true)
+  is_deleted       Boolean    @default(false)
+  is_archived      Boolean    @default(false)
+  created_at       DateTime   @default(now())
   updated_at       DateTime
+  Comments         Comments[]
 }
 
 model Comments {
   id           Int      @id @default(autoincrement())
   commenter_id String
   comment      String
-  
+  ticket_id    Int
+  ticket       Tickets  @relation(fields: [ticket_id], references: [id])
   is_active    Boolean  @default(true)
   is_deleted   Boolean  @default(false)
   created_at   DateTime @default(now())
