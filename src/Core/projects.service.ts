@@ -1,13 +1,16 @@
+import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { DbConnector } from './Base/DbConnector';
+import { DbConnector } from './Base/DbConnector.service';
 import { DefaultArgs } from '@prisma/client/runtime/library';
+@Injectable()
+export class ProjectService {
+  constructor(private readonly prisma: DbConnector) {}
 
-class Project extends DbConnector {
   public async create(
     project: Prisma.ProjectsCreateInput,
   ): Promise<Prisma.ProjectsCreateWithoutBoardsInput | Error> {
     try {
-      const createdProject = await this.projects.create({ data: project });
+      const createdProject = await this.prisma.projects.create({ data: project });
       return createdProject;
     } catch (error) {
       return error;
@@ -19,7 +22,7 @@ class Project extends DbConnector {
     project: Partial<Prisma.ProjectsUpdateInput>,
   ): Promise<Prisma.ProjectsUpdateWithoutBoardsInput | Error> {
     try {
-      const updateProject = await this.projects.update({
+      const updateProject = await this.prisma.projects.update({
         where: { id },
         data: project,
       });
@@ -33,7 +36,7 @@ class Project extends DbConnector {
     id: number,
   ): Promise<Partial<Prisma.ProjectsDelegate<DefaultArgs>> | Error> {
     try {
-      const project = await this.projects.findUnique({ where: { id } });
+      const project = await this.prisma.projects.findUnique({ where: { id } });
       return project;
     } catch (error) {
       return error;
@@ -44,7 +47,7 @@ class Project extends DbConnector {
     owner_id: string,
   ): Promise<Array<Partial<Prisma.ProjectsDelegate<DefaultArgs>>> | Error> {
     try {
-      const projects = await this.projects.findMany({
+      const projects = await this.prisma.projects.findMany({
         where: {
           owner_id,
         },
@@ -59,7 +62,7 @@ class Project extends DbConnector {
     id: number,
   ): Promise<Array<Partial<Prisma.ProjectsDelegate<DefaultArgs>>> | Error> {
     try {
-      const boards = await this.projects.findMany({
+      const boards = await this.prisma.projects.findMany({
         where: { id },
         include: {
           boards: true,
@@ -72,19 +75,19 @@ class Project extends DbConnector {
   }
 
   public async addContributors(
-    contributorsList: String,
+    contributorsList: string,
     id: number,
   ): Promise<Prisma.ProjectsUpdateWithoutBoardsInput | Error> {
     try {
-      const contributorsProjectList = await this.projects.findUnique({
+      const contributorsProjectList = await this.prisma.projects.findUnique({
         where: { id },
         select: {
           contributors: true,
         },
       });
-      let list = contributorsList.split(',');
-      let updatedList = [...contributorsProjectList.contributors];
-      list.map((item) => {
+      const list = contributorsList.split(',');
+      const updatedList = [...contributorsProjectList.contributors];
+      list.forEach(item => {
         updatedList.push(item);
       });
       const updatedProject = await this.update(id, {
@@ -97,20 +100,23 @@ class Project extends DbConnector {
   }
 
   public async removeContributors(
-    contributorsList: String,
+    contributorsList: string,
     id: number,
   ): Promise<Prisma.ProjectsUpdateWithoutBoardsInput | Error> {
     try {
-      const contributorsProjectList = await this.projects.findUnique({
+      const contributorsProjectList = await this.prisma.projects.findUnique({
         where: { id },
         select: {
           contributors: true,
         },
       });
-      let list = contributorsList.split(',');
-      let updatedList = [...contributorsProjectList.contributors];
-      list.map((item) => {
-        updatedList.splice(updatedList.indexOf(item), 1);
+      const list = contributorsList.split(',');
+      const updatedList = [...contributorsProjectList.contributors];
+      list.forEach(item => {
+        const index = updatedList.indexOf(item);
+        if (index > -1) {
+          updatedList.splice(index, 1);
+        }
       });
       const updatedProject = await this.update(id, {
         contributors: updatedList,
@@ -121,7 +127,7 @@ class Project extends DbConnector {
     }
   }
 
-  public async deleteProjectById(id: number): Promise<Boolean | Error> {
+  public async deleteProjectById(id: number): Promise<boolean | Error> {
     try {
       await this.update(id, { is_deleted: true });
       return true;
@@ -130,7 +136,7 @@ class Project extends DbConnector {
     }
   }
 
-  public async archivedProjectById(id: number): Promise<Boolean | Error> {
+  public async archivedProjectById(id: number): Promise<boolean | Error> {
     try {
       await this.update(id, { is_archived: true });
       return true;
@@ -142,7 +148,7 @@ class Project extends DbConnector {
   public async changeProjectStateById(
     id: number,
     active: boolean,
-  ): Promise<Boolean | Error> {
+  ): Promise<boolean | Error> {
     try {
       await this.update(id, { is_active: active });
       return true;
@@ -151,5 +157,3 @@ class Project extends DbConnector {
     }
   }
 }
-
-export default Project;
